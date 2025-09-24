@@ -18,11 +18,20 @@ class HeistInput {
   });
 }
 
+
+class PlayerLootShare {
+  final String name;
+  final double percent; // 0.0 a 1.0
+  final double value;
+
+  PlayerLootShare({required this.name, required this.percent, required this.value});
+}
+
 class PlayerResult {
-  final List<String> itemStrings;
+  final List<PlayerLootShare> lootShares;
   final double secondaryValue;
 
-  PlayerResult({required this.itemStrings, required this.secondaryValue});
+  PlayerResult({required this.lootShares, required this.secondaryValue});
 }
 
 class HeistResult {
@@ -92,15 +101,20 @@ class HeistOptimizer {
     // --- PHASE 2: Distribution of main loot ---
     mainLoot.sort((a, b) => b.percentage.compareTo(a.percentage));
     var playerCapacities = List.filled(input.playerCount, 100.0);
+
     var distribution = <int, Map<String, dynamic>>{};
     for (int i = 0; i < input.playerCount; i++) {
-      distribution[i] = {'items': <String>[], 'value': 0.0};
+      distribution[i] = {'lootShares': <PlayerLootShare>[], 'value': 0.0};
     }
 
     for (final item in mainLoot) {
       for (int i = 0; i < input.playerCount; i++) {
         if (playerCapacities[i] >= item.percentage) {
-          distribution[i]!['items'].add('1x ${item.name} (Full)');
+          distribution[i]!['lootShares'].add(PlayerLootShare(
+            name: item.name,
+            percent: item.percentage / 100.0,
+            value: item.value.toDouble(),
+          ));
           distribution[i]!['value'] += item.value;
           playerCapacities[i] -= item.percentage;
           break;
@@ -121,10 +135,6 @@ class HeistOptimizer {
 
     for (int i = 0; i < input.playerCount; i++) {
       double spaceToFill = playerCapacities[i];
-      if (spaceToFill > 0 && availableResources.values.any((r) => r['total_weight'] > 0)) {
-        distribution[i]!['items'].add('--- Filler ---');
-      }
-
       while (spaceToFill > 0) {
         String? bestResourceName;
         double maxEfficiency = -1;
@@ -136,15 +146,16 @@ class HeistOptimizer {
         });
 
         if (bestResourceName == null) {
-          if (spaceToFill > 0) {
-            distribution[i]!['items'].add('$spaceToFill% EMPTY SPACE (No loot left)');
-          }
           break;
         }
 
         final resource = availableResources[bestResourceName!]!;
         final weightToTake = min(spaceToFill, resource['total_weight']);
-        distribution[i]!['items'].add('$weightToTake% of $bestResourceName');
+        distribution[i]!['lootShares'].add(PlayerLootShare(
+          name: bestResourceName!,
+          percent: weightToTake / 100.0,
+          value: weightToTake * resource['value_per_pct'],
+        ));
         distribution[i]!['value'] += weightToTake * resource['value_per_pct'];
         resource['total_weight'] -= weightToTake;
         spaceToFill -= weightToTake;
@@ -152,12 +163,13 @@ class HeistOptimizer {
     }
 
     // --- Final Report Generation ---
+
     double totalSecondaryValue = 0;
     Map<int, PlayerResult> finalPlayerResults = {};
     for (int i = 0; i < input.playerCount; i++) {
       totalSecondaryValue += distribution[i]!['value'];
       finalPlayerResults[i + 1] = PlayerResult(
-        itemStrings: List<String>.from(distribution[i]!['items']),
+        lootShares: List<PlayerLootShare>.from(distribution[i]!['lootShares']),
         secondaryValue: distribution[i]!['value'],
       );
     }

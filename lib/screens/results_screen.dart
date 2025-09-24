@@ -14,17 +14,14 @@ class ResultsScreen extends StatefulWidget {
 }
 
 class _ResultsScreenState extends State<ResultsScreen> {
-  // Declared here, will be initialized in initState.
   late List<bool> _isPanelExpanded;
 
-  // A helper for formatting numbers as currency.
   final currencyFormatter =
       NumberFormat.currency(locale: 'en_US', symbol: '\$', decimalDigits: 0);
 
   @override
   void initState() {
     super.initState();
-    // Initialize the list with the correct length based on the actual number of players.
     _isPanelExpanded =
         List.generate(widget.result.playerResults.length, (_) => false);
   }
@@ -110,24 +107,19 @@ class _ResultsScreenState extends State<ResultsScreen> {
   }
 
   Widget _buildPlayerDistributionPanels() {
-    // Convert the map entries to a list to be able to access by a numeric index.
     final playerEntries = widget.result.playerResults.entries.toList();
 
     return ExpansionPanelList(
-      expansionCallback: (int panelIndex, bool isExpanded) {
-        // This function receives the index of the panel that was tapped (0, 1, 2...).
+      expansionCallback: (int panelIndex, bool isCurrentlyExpanded) {
         setState(() {
-          // We update the state at the same index position. Now they match!
-          _isPanelExpanded[panelIndex] = !isExpanded;
+          _isPanelExpanded[panelIndex] = !_isPanelExpanded[panelIndex];
         });
       },
       children: List.generate(playerEntries.length, (int itemIndex) {
-        // We use List.generate to have a clear index (0, 1, 2...) for each panel.
         final playerNumber = playerEntries[itemIndex].key;
         final playerResult = playerEntries[itemIndex].value;
 
         return ExpansionPanel(
-          // We tell the panel that its state (expanded/collapsed) is at the 'itemIndex' position.
           isExpanded: _isPanelExpanded[itemIndex],
           backgroundColor: const Color(0xFF2C3E50),
           headerBuilder: (BuildContext context, bool isExpanded) {
@@ -145,16 +137,56 @@ class _ResultsScreenState extends State<ResultsScreen> {
             );
           },
           body: Padding(
-            padding:
-                const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: playerResult.itemStrings
-                    .map((item) =>
-                        Text('• $item', style: const TextStyle(height: 1.5)))
-                    .toList(),
+                children: playerResult.lootShares.map((loot) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            loot.name,
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 5,
+                          child: Stack(
+                            children: [
+                              Container(
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              FractionallySizedBox(
+                                widthFactor: loot.percent.clamp(0.0, 1.0),
+                                child: Container(
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${(loot.percent * 100).toStringAsFixed(0)}%',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ),
