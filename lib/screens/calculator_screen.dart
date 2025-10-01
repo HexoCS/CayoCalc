@@ -1,7 +1,7 @@
 // lib/screens/calculator_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:cayocalc/models/heist_data.dart'; // Import our data models
+import 'package:cayocalc/models/heist_data.dart';
 import 'package:cayocalc/logic/heist_optimizer.dart';
 import 'results_screen.dart';
 
@@ -97,19 +97,14 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-  // 1. Create the input object from the user's selections
           final heistInput = HeistInput(
             playerCount: _playerCount,
             primaryLoot: _selectedPrimary,
             isHardMode: _isHardMode,
             availableLoot: _secondaryLootCounts,
           );
-
-          // 2. Instantiate the optimizer and run the calculation
           final optimizer = HeistOptimizer();
           final heistResult = optimizer.calculateOptimalLoot(heistInput);
-
-          // 3. Navigate to the results screen, passing the result object
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (context) => ResultsScreen(result: heistResult),

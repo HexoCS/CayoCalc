@@ -18,14 +18,21 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // TODO: Añadir un logo o imagen temática aquí
-              const Spacer(),
+              // Logo centrado
+              Padding(
+                padding: const EdgeInsets.only(bottom: 32),
+                child: Image.asset(
+                  'assets/Cayocalc.png',
+                  height: 220,
+                  fit: BoxFit.contain,
+                ),
+              ),
               Text(
                 'Optimize your Cayo Perico loot',
                 textAlign: TextAlign.center,
@@ -34,26 +41,69 @@ class HomeScreen extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 32),
-              
-              ElevatedButton.icon(
-                icon: const Icon(Icons.calculate),
-                label: const Text('PLAN NEW HEIST'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+              // Botón cuadrado estilo Cayo Perico (naranja arriba, negro abajo)
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const CalculatorScreen()),
+                    );
+                  },
+                  child: IntrinsicHeight(
+                    child: Container(
+                      width: 220,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFFF6600), width: 2),
+                        borderRadius: BorderRadius.zero,
+                        color: Colors.black,
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 220,
+                            color: const Color(0xFFFF6600),
+                            alignment: Alignment.center,
+                            child: const SizedBox(
+                              height: 48,
+                              child: Center(
+                                child: Text(
+                                  'START',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 22,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 220,
+                            color: Colors.black,
+                            alignment: Alignment.center,
+                            child: const SizedBox(
+                              height: 48,
+                              child: Center(
+                                child: Text(
+                                  '\$\$\$', // $$$
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 28,
+                                    letterSpacing: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  backgroundColor: Theme.of(context).primaryColor,
-                  foregroundColor: Colors.black,
                 ),
-                onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const CalculatorScreen()),
-                );
-              },
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
             ],
           ),
         ),
